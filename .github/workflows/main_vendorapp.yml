@@ -41,6 +41,14 @@ jobs:
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
         run: npx prisma generate
 
+      - name: Verify Secrets
+        run: |
+          echo "DATABASE_URL exists: ${{ secrets.DATABASE_URL != '' }}"
+          echo "NEXTAUTH_SECRET exists: ${{ secrets.NEXTAUTH_SECRET != '' }}"
+          echo "NEXTAUTH_URL exists: ${{ secrets.NEXTAUTH_URL != '' }}"
+          echo "BLOB_STORE_ID exists: ${{ secrets.BLOB_STORE_ID != '' }}"
+          echo "BLOB_READ_WRITE_TOKEN exists: ${{ secrets.BLOB_READ_WRITE_TOKEN != '' }}"
+
       - name: Build Next.js App
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
