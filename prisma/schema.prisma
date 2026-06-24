@@ -1,0 +1,218 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String    @id @default(cuid())
+  email       String    @unique
+  name        String
+  password    String
+  createdAt   DateTime  @default(now())
+  role        UserRole  @default(INITIATOR)
+  address     String?
+  dateOfBirth DateTime?
+  gstNumber   String?
+  panCard     String?
+  phoneNumber String?
+
+  @@map("users")
+}
+
+model Vendor {
+  id                 String           @id @default(cuid())
+  status             VendorStatus     @default(DRAFT)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  gstNumber          String           @unique
+  tradeName          String
+  legalName          String
+  pan                String
+  dateOfRegistration DateTime
+  panLinkedAadhaar   Boolean          @default(false)
+  addressLine1       String
+  addressLine2       String?
+  city               String
+  state              String
+  pincode            String
+  contactPerson      String
+  contactEmail       String
+  contactPhone       String
+  departmentName     String?
+  natureOfService    String
+  paymentFrequency   String
+  paygroup           String?
+  groupCode          String?
+  compositeGstScheme Boolean          @default(false)
+  eInvoiceRequired   Boolean          @default(true)
+  registeredMsme     Boolean          @default(false)
+  msmeNumber         String?
+  itrFiledLastYear   Boolean          @default(false)
+  taxExemption       Boolean          @default(false)
+  tdsRate            Decimal?         @db.Decimal(5, 2)
+  agreementStartDate DateTime?
+  agreementEndDate   DateTime?
+  oracleVendorId     String?
+  oracleSiteId       String?
+  auditLogs          AuditLog[]
+  bankAccounts       BankAccount[]
+  documents          VendorDocument[]
+
+  @@map("vendors")
+}
+
+model BankAccount {
+  id              String      @id @default(cuid())
+  vendorId        String
+  accountNumber   String
+  ifscCode        String
+  beneficiaryName String?
+  bankName        String
+  branchName      String
+  crn             String?
+  accountType     AccountType @default(CURRENT)
+  isPrimary       Boolean     @default(false)
+  isVerified      Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  vendor          Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("bank_accounts")
+}
+
+model VendorDocument {
+  id           String       @id @default(cuid())
+  vendorId     String
+  documentType DocumentType
+  fileName     String
+  fileUrl      String
+  fileSize     Int?
+  mimeType     String?
+  uploadedAt   DateTime     @default(now())
+  vendor       Vendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("vendor_documents")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  vendorId  String
+  action    String
+  oldValue  String?
+  newValue  String?
+  changedBy String
+  changedAt DateTime @default(now())
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+model gstin_profiles {
+  id                 String   @id
+  gstin              String   @unique
+  tradeName          String?
+  legalName          String?
+  pan                String?
+  dateOfRegistration String?
+  status             String?
+  businessType       String?
+  addressLine1       String?
+  addressLine2       String?
+  city               String?
+  state              String?
+  pincode            String?
+  natureOfBusiness   String?
+  annualTurnover     String?
+  compositeScheme    Boolean?
+  eInvoiceApplicable Boolean?
+  createdAt          DateTime?
+  updatedAt          DateTime?
+
+  @@map("gstin_profiles")
+}
+
+model GstMaster {
+  id                 String   @id @default(cuid())
+  gstin              String   @unique
+  tradeName          String
+  legalName          String
+  pan                String
+  dateOfRegistration String
+  status             String   @default("ACTIVE")
+  businessType       String
+  addressLine1       String
+  addressLine2       String?
+  city               String
+  state              String
+  pincode            String
+  natureOfBusiness   String
+  annualTurnover     String
+  compositeScheme    Boolean  @default(false)
+  eInvoiceApplicable Boolean  @default(true)
+  createdAt          DateTime @default(now())
+
+  @@map("gst_master")
+}
+
+model BankMaster {
+  id         String   @id @default(cuid())
+  ifscCode   String   @unique @map("ifsccode")
+  bankName   String   @map("bankname")
+  branchName String   @map("branchname")
+  city       String   @map("city")
+  state      String   @map("state")
+  createdAt  DateTime @default(now()) @map("createdat")
+  pennyDrops PennyDropLog[]
+
+  @@map("bank_master")
+}
+
+model PennyDropLog {
+  id              String      @id @default(cuid())
+  accountNumber   String      @map("accountnumber")
+  ifscCode        String      @map("ifsccode")
+  beneficiaryName String?     @map("beneficiaryname")
+  accountType     AccountType @default(CURRENT) @map("accounttype")
+  status          String      @map("status")
+  transactionId   String      @unique @map("transactionid")
+  createdAt       DateTime    @default(now()) @map("createdat")
+  bankMaster      BankMaster  @relation(fields: [ifscCode], references: [ifscCode])
+
+  @@unique([accountNumber, ifscCode])
+  @@map("penny_drop_logs")
+}
+
+enum VendorStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  INACTIVE
+  CLARIFICATION_NEEDED
+  CLARIFICATION_RESUBMITTED
+  APPROVER_APPROVED
+}
+
+enum AccountType {
+  SAVINGS
+  CURRENT
+}
+
+enum DocumentType {
+  REGISTRATION_CERTIFICATE
+  PAN_CARD_COPY
+  ADDRESS_PROOF
+  ITR_PROOF
+  MSME_CERTIFICATE
+  OTHER
+}
+
+enum UserRole {
+  ADMIN
+  INITIATOR
+  APPROVER
+  IC_TEAM
+  ACCOUNTS
+}
