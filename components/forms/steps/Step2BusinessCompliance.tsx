@@ -9,7 +9,7 @@ const inp = "w-full px-3 py-2 border border-gray-200 rounded-lg text-xs font-med
 const lbl = "block text-xs font-semibold text-gray-500 mb-1.5";
 
 const NATURE_OPTIONS = [
-  "Rent",
+  "REnt",
   "Professional Services",
   "Contract Labour",
   "Supply of Goods",
