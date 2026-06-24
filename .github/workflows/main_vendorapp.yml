@@ -61,6 +61,6 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: vendor-management-system-kiran
+          app-name: VendorApp
           slot-name: Production
           package: .
